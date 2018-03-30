@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>websocket 实现聊天</title>
+    <style>
+        *{
+            padding:0;
+            margin:0;
+        }
+        .user-name {
+            padding-bottom: 15px;
+        }
+        .user-name input{
+            height:30px;
+            width:120px;
+            border:1px solid #4f97eb;
+            border-radius: 5px;
+            padding:0 6px;
+            outline: none;
+        }
+        .wrap{
+            width:520px;
+            height:650px;
+            margin:30px auto;
+            border-radius: 5px;
+            border:20px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,.6);
+        }
+        .record{
+            height:380px;
+            overflow-y:auto;
+            border-bottom:1px solid #d1d1d1;
+            background-color:#e1e1e1;
+            padding:5px 10px;
+        }
+        .input{
+            border-bottom:1px solid #d1d1d1;
+            padding:5px 10px;
+        }
+        .input textarea{
+            width:100%;
+            border:0;
+            outline: none;
+            resize:none;
+            height:160px;
+            font-size:16px;
+            font-family: '楷体';
+        }
+        .oprate{
+            padding-top:10px;
+        }
+        .oprate button{
+            float: right;
+            width:100px;
+            height:36px;
+            border:none;
+            background-color:#4f97eb;
+            color:#fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .oprate button:hover{
+            box-shadow: 0 0 8px #4f97eb;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="user-name"><input type="text" placeholder="给自己起个名字" id="user-name"> <button id="login">登录</button></div>
+        <div class="record"></div>
+        <div class="input">
+            <textarea name="" id="input" cols="30" rows="10"></textarea>
+        </div>
+        <div class="oprate">
+            <button id="send">发送</button>
+        </div>
+    </div>
+    <script>
+        window.onload = function(){
+            var sendBtn = document.getElementById('send');
+            var inputDom = document.getElementById('input');
+            var userNameDom = document.getElementById('user-name');
+            var userName = '';
+            var logined = false;
+            var id = 0;
+            document.getElementById('login').onclick = function(){
+                /*if(!/^[\u4e00-\u9fa5]{2,10}$/.test(userNameDom.value)){
+                    alert('必须汉子');
+                    return false;
+                }*/
+                userName = userNameDom.value;
+                if(!userName || userName == 'name' ){
+                    alert('不能为空！');
+                    return false;
+                }
+                
+                logined = true;
+                userNameDom.setAttribute('disabled','');
+                id ++;
+                WebSocketTest();
+            }
+            function WebSocketTest(){
+                if ("WebSocket" in window)
+                {
+                   //alert("您的浏览器支持 WebSocket!");
+                   
+                   // 打开一个 web socket
+                   var ws = new WebSocket("ws://localhost:8083");
+                    
+                    ws.onopen = function()
+                    {
+                        // Web Socket 已连接上，使用 send() 方法发送数据
+                        ws.send('name,'+userName);
+                        // alert("数据发送中...");
+                        sendBtn.onclick = function(){
+                            var userName = userNameDom.value;
+                            ws.send(userName +':'+ inputDom.value);
+                            inputDom.value = '';
+                        }
+                    };
+                    
+                   ws.onmessage = function (evt) 
+                   { 
+                        console.log(evt);
+                      var received_msg = evt.data;
+                      //alert("数据已接收...");
+                   };
+                    
+                   ws.onclose = function()
+                   { 
+                      // 关闭 websocket
+                      //alert("连接已关闭..."); 
+                   };
+                }
+                
+                else
+                {
+                   // 浏览器不支持 WebSocket
+                   alert("您的浏览器不支持 WebSocket!");
+                }
+            }
+        }
+    </script> 
+</body>
+</html>
